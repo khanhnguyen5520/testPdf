@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<paths>
+    <!-- Allow access to external files directory -->
+    <external-files-path name="external_files" path="Documents/" />
+
+    <!-- Allow access to specific paths on external storage -->
+    <external-path name="external_storage" path="." />
+
+    <!-- Access specific file path directly -->
+    <root-path name="root" path="." />
+</paths>

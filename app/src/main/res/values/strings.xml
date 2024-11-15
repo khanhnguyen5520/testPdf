@@ -1,0 +1,5 @@
+<resources>
+    <string name="app_name">pdfApplication</string>
+    <string name="title_activity_merge">MergeActivity</string>
+    <string name="title_activity_edit_file">EditFileActivity</string>
+</resources>
