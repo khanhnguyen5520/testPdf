@@ -17,6 +17,8 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material.icons.filled.Face
+import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.CircularProgressIndicator
@@ -29,6 +31,7 @@ import androidx.compose.material3.TextButton
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -55,6 +58,7 @@ import java.io.File
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun PdfViewer(pageBitmaps: List<Bitmap>, filePath: String, onBack: () -> Unit) {
+    val context = LocalContext.current
     val screenWidth = LocalContext.current.resources.displayMetrics.widthPixels
 
     var searchQuery by remember { mutableStateOf("") }
@@ -66,12 +70,18 @@ fun PdfViewer(pageBitmaps: List<Bitmap>, filePath: String, onBack: () -> Unit) {
     var dragEnd by remember { mutableStateOf<Offset?>(null) }
     val selectionsByPage by remember { mutableStateOf<MutableMap<Int, MutableList<Pair<Offset, Offset>>>>(mutableMapOf()) }
 
+
     // Cache for rendered bitmaps
     val bitmapCache = remember { LruCache<Int, Bitmap>(10) }
 
     suspend fun renderPageAsync(pageIndex: Int): Bitmap {
         return withContext(Dispatchers.IO) {
-            val pdfRenderer = PdfRenderer(ParcelFileDescriptor.open(File(filePath), ParcelFileDescriptor.MODE_READ_ONLY))
+            val pdfRenderer = PdfRenderer(
+                ParcelFileDescriptor.open(
+                    File(filePath),
+                    ParcelFileDescriptor.MODE_READ_ONLY
+                )
+            )
             val page = pdfRenderer.openPage(pageIndex)
             val height = (page.height * (screenWidth.toFloat() / page.width)).toInt()
             val bitmap = Bitmap.createBitmap(screenWidth, height, Bitmap.Config.ARGB_8888)
@@ -121,6 +131,14 @@ fun PdfViewer(pageBitmaps: List<Bitmap>, filePath: String, onBack: () -> Unit) {
 
                     IconButton(onClick = { showSearchDialog = true }) {
                         Icon(Icons.Default.Search, contentDescription = "Search")
+                    }
+
+                    IconButton(onClick = {}) {
+                        Icon(Icons.Default.Refresh, contentDescription = "Inversion")
+                    }
+
+                    IconButton(onClick = {}) {
+                        Icon(Icons.Default.Face, contentDescription = "Draw")
                     }
                 }
             )

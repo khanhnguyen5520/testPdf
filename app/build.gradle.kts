@@ -2,7 +2,7 @@ plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
-    id ("kotlin-parcelize")
+    id("kotlin-parcelize")
 }
 
 android {
@@ -58,16 +58,15 @@ dependencies {
     debugImplementation(libs.androidx.ui.tooling)
     debugImplementation(libs.androidx.ui.test.manifest)
 
-    implementation ("com.itextpdf:itext7-core:7.2.2")
-    implementation ("org.apache.poi:poi:5.2.3")
-    implementation ("org.apache.poi:poi-ooxml:5.2.3")
-//    implementation ("org.apache.poi:poi-ooxml-schemas:5.2.3")
-    implementation ("org.apache.xmlbeans:xmlbeans:5.2.2")
-//    implementation ("org.apache.pdfbox:pdfbox:2.0.29")
-
-//    implementation("com.itextpdf:itextg:5.5.13.3")
+    implementation("com.itextpdf:itext7-core:7.2.2")
+    implementation("org.apache.poi:poi:5.2.3")
+    implementation("org.apache.poi:poi-ooxml:5.2.3")
+    implementation("org.apache.xmlbeans:xmlbeans:5.2.2")
 
     implementation("com.itextpdf:kernel:7.2.5")
     implementation(libs.coil.compose)
+
+    //Load pdf file
+    implementation("com.github.chrisbanes:PhotoView:2.3.0")
 
 }
