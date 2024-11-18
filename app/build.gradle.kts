@@ -67,6 +67,7 @@ dependencies {
 
 //    implementation("com.itextpdf:itextg:5.5.13.3")
 
+    implementation("com.itextpdf:kernel:7.2.5")
     implementation(libs.coil.compose)
 
 }

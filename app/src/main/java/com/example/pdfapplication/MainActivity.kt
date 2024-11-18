@@ -89,7 +89,7 @@ class MainActivity : ComponentActivity() {
                 }
 
                 Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
-                    FileTabs(
+                    FilterBar(
                         files = files,
                         onDelete = { filePath ->
                             val file = File(filePath)
@@ -232,63 +232,6 @@ fun isSupportedFile(file: File): Boolean {
 fun formatDate(timestamp: Long): String {
     return SimpleDateFormat("dd/MM/yyyy")
         .format(Date(timestamp))
-}
-
-@Composable
-fun FileTabs(
-    files: List<DocumentFile>,
-    onDelete: (String) -> Unit,
-    modifier: Modifier = Modifier
-) {
-    var selectedTabIndex by remember { mutableIntStateOf(0) }
-    val selectedTab = FileTab.entries[selectedTabIndex]
-    val context = LocalContext.current
-
-    var showBottomSheet by remember { mutableStateOf(false) }
-    var selectedFile by remember { mutableStateOf<DocumentFile?>(null) }
-
-    Box(modifier = Modifier.fillMaxSize()) {
-        Column(modifier = modifier.fillMaxSize()) {
-            TabRow(selectedTabIndex = selectedTabIndex) {
-                FileTab.entries.forEachIndexed { index, tab ->
-                    Tab(
-                        selected = selectedTabIndex == index,
-                        onClick = { selectedTabIndex = index },
-                        text = { Text(tab.title) }
-                    )
-                }
-            }
-
-            val filteredFiles = files.filter {
-                selectedTab.extensions.isEmpty() || selectedTab.extensions.any { ext ->
-                    it.filePath.endsWith(ext, ignoreCase = true)
-                }
-            }
-
-            FileList(
-                files = filteredFiles,
-                onOptionsClick = { file ->
-                    selectedFile = file
-                    showBottomSheet = true
-                },
-                modifier = Modifier.weight(1f),
-                onEditClick = { file ->
-                    val intent = Intent(context, EditFileActivity::class.java).apply {
-                        putExtra("filePath", file.filePath)
-                    }
-                    context.startActivity(intent)
-                }
-            )
-        }
-
-        if (showBottomSheet && selectedFile != null) {
-            FileOptionsBottomSheet(
-                file = selectedFile!!,
-                onDelete = onDelete,
-                onDismiss = { showBottomSheet = false }
-            )
-        }
-    }
 }
 
 @Composable
@@ -584,6 +527,6 @@ fun FileTabsPreview() {
         DocumentFile("path4", "Presentation.pptx", "2024-11-04", 78901)
     )
     PdfApplicationTheme {
-        FileTabs(files = mockFiles, onDelete = {})
+        FilterBar(files = mockFiles, onDelete = {})
     }
 }
