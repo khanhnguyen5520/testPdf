@@ -33,6 +33,7 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -42,7 +43,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.asImageBitmap
+import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
@@ -68,8 +71,18 @@ fun PdfViewer(pageBitmaps: List<Bitmap>, filePath: String, onBack: () -> Unit) {
     var isEditing by remember { mutableStateOf(false) }
     var dragStart by remember { mutableStateOf<Offset?>(null) }
     var dragEnd by remember { mutableStateOf<Offset?>(null) }
-    val selectionsByPage by remember { mutableStateOf<MutableMap<Int, MutableList<Pair<Offset, Offset>>>>(mutableMapOf()) }
 
+    val selectionsByPage by remember {
+        mutableStateOf<MutableMap<Int, MutableList<Pair<Offset, Offset>>>>(
+            mutableMapOf()
+        )
+    }
+
+// Toggle draw mode
+    var drawMode by remember { mutableStateOf(false) }
+
+    // Store drawing paths per page
+    val drawPaths = remember { mutableStateOf(mutableMapOf<Int, MutableList<Path>>()) }
 
     // Cache for rendered bitmaps
     val bitmapCache = remember { LruCache<Int, Bitmap>(10) }
@@ -137,8 +150,12 @@ fun PdfViewer(pageBitmaps: List<Bitmap>, filePath: String, onBack: () -> Unit) {
                         Icon(Icons.Default.Refresh, contentDescription = "Inversion")
                     }
 
-                    IconButton(onClick = {}) {
-                        Icon(Icons.Default.Face, contentDescription = "Draw")
+                    IconButton(onClick = { drawMode = !drawMode }) {
+                        Icon(
+                            Icons.Default.Face,
+                            contentDescription = "Draw",
+                            tint = if (drawMode) Color.Red else Color.Black
+                        )
                     }
                 }
             )
@@ -171,7 +188,7 @@ fun PdfViewer(pageBitmaps: List<Bitmap>, filePath: String, onBack: () -> Unit) {
                                 .fillMaxWidth()
                                 .padding(8.dp)
                                 .aspectRatio(bitmap!!.width.toFloat() / bitmap!!.height.toFloat())
-                                .pointerInput(isEditing) {
+                                .pointerInput(isEditing || drawMode) {
                                     if (isEditing) {
                                         detectDragGestures(
                                             onDragStart = { offset ->
@@ -196,6 +213,23 @@ fun PdfViewer(pageBitmaps: List<Bitmap>, filePath: String, onBack: () -> Unit) {
                                                 dragEnd = change.position
                                             }
                                         )
+                                    } else if (drawMode) {
+                                        // Handle drawing on the canvas
+                                        detectDragGestures(
+                                            onDragStart = { offset ->
+                                                val path = Path().apply { moveTo(offset.x, offset.y) }
+                                                // Add new path to the drawing state
+                                                drawPaths.value[pageIndex] =
+                                                    (drawPaths.value[pageIndex] ?: mutableListOf()).apply {
+                                                        add(path)
+                                                    }
+                                            },
+                                            onDrag = { change, _ ->
+                                                drawPaths.value[pageIndex]?.lastOrNull()?.lineTo(change.position.x, change.position.y)
+                                            },
+                                            onDragEnd = {
+                                            }
+                                        )
                                     }
                                 }
                         ) {
@@ -209,22 +243,24 @@ fun PdfViewer(pageBitmaps: List<Bitmap>, filePath: String, onBack: () -> Unit) {
 //                                }
 //                            }
 
-                            Canvas(modifier = Modifier.fillMaxSize()) {
-                                drawImage(bitmap!!.asImageBitmap())
+//                            Canvas(modifier = Modifier.fillMaxSize()) {
+//                                drawImage(bitmap!!.asImageBitmap())
+//
+//                                matches.forEach { matchStartIndex ->
+//                                    drawRect(
+//                                        color = Color.Yellow.copy(alpha = 0.5f),
+//                                        topLeft = Offset(matchStartIndex.toFloat(), 0f),
+//                                        size = Size(100f, 20f)
+//                                    )
+//                                }
+//                            }
 
-                                matches.forEach { matchStartIndex ->
-                                    drawRect(
-                                        color = Color.Yellow.copy(alpha = 0.5f),
-                                        topLeft = Offset(matchStartIndex.toFloat(), 0f),
-                                        size = Size(
-                                            100f,
-                                            20f
-                                        )
-                                    )
+                            Canvas(modifier = Modifier.fillMaxSize()) {
+                                // Draw all paths drawn for the current page
+                                drawPaths.value[pageIndex]?.forEach { path ->
+                                    drawPath(path, color = Color.Red, style = Stroke(width = 5f))
                                 }
-                            }
 
-                            Canvas(modifier = Modifier.fillMaxSize()) {
                                 val pageSelections =
                                     selectionsByPage[pageIndex] ?: emptyList()
                                 pageSelections.forEach { (start, end) ->
