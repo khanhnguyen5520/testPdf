@@ -69,4 +69,6 @@ dependencies {
     //Load pdf file
     implementation("com.github.chrisbanes:PhotoView:2.3.0")
 
+    implementation ("com.github.DImuthuUpe:AndroidPdfViewer:2.8.1")
+
 }

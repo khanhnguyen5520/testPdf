@@ -9,6 +9,7 @@ import androidx.activity.compose.setContent
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import com.example.pdfapplication.view.ExcelViewer
+import com.example.pdfapplication.view.PdfViewScreen
 import com.example.pdfapplication.view.PdfViewer
 import com.example.pdfapplication.view.PptViewer
 import com.example.pdfapplication.view.WordViewer
@@ -77,7 +78,7 @@ enum class FileType {
 @Composable
 fun FileViewer(file: File, fileType: FileType, pageBitmaps: List<Bitmap>, onBack: () -> Unit) {
     when (fileType) {
-        FileType.PDF -> PdfViewer(pageBitmaps, filePath = file.path, onBack = onBack)
+        FileType.PDF -> PdfViewScreen(pageBitmaps, filePath = file.path, onBack = onBack)
         FileType.WORD -> WordViewer(file)
         FileType.EXCEL -> ExcelViewer(file)
         FileType.PPT -> PptViewer(file)
